@@ -18,7 +18,7 @@ def scipy_load_wav(filename):
     y, f_s = wavfile.read(fullpath)
     return y, f_s
 
-f_s, y = scipy_load_wav("single-note-me.wav")
+f_s, y = scipy_load_wav("pi_mono.wav")
 
 
 def freq_to_note(freq):
@@ -27,6 +27,7 @@ def freq_to_note(freq):
     12 semitones per octave
     A440 is key number 49 on the piano
     """
+
     return math.log2(freq / 440) * 12 + 49
 
 def note_to_freq(note):
@@ -116,7 +117,10 @@ def to_buckets(fft):
 
 
 def single_note_from(fft):
-    peak = freq_to_note(fft.argmax() * scaling_factor)
+    try:
+        peak = freq_to_note(fft.argmax() * scaling_factor)
+    except ValueError:
+        return 0
     tuning = (peak % 1)
     if tuning < 0.5:
         return int(peak)
