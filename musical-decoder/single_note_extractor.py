@@ -3,11 +3,6 @@ import os
 from scipy.fftpack import fft as FFT
 import numpy
 from scipy.io import wavfile
-print("Loading octave...")
-
-import oct2py
-
-octave = oct2py.Oct2Py()
 
 from plot import scipy_load_wav, freq_to_note, get_scaling_factor, tuning, single_note_from
 

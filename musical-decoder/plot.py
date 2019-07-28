@@ -7,12 +7,6 @@ import os
 import numpy
 from scipy.fftpack import fft as FFT
 from scipy.io import wavfile
-print("Loading octave...")
-
-import oct2py
-
-
-octave = oct2py.Oct2Py()
 
 print("Loading sound file...")
 
@@ -24,17 +18,7 @@ def scipy_load_wav(filename):
     y, f_s = wavfile.read(fullpath)
     return y, f_s
 
-# y, f_s = octave_load_wav("output.wav")
-# y, f_s = octave_load_wav("file.wav")
-# y, f_s = octave_load_wav("c-minor-chord.wav")
-# y, f_s = octave_load_wav("single-piano-note.wav")
-# f_s, y = scipy_load_wav("waltz.wav")
-# f_s, y = scipy_load_wav("single-piano-note.wav")
 f_s, y = scipy_load_wav("single-note-me.wav")
-# y, f_s = octave_load_wav("single-notes.wav")
-# y, f_s = octave_load_wav("octave-on-piano.wav")
-# y, f_s = octave_load_wav("chromatic.wav")
-# y, f_s = octave_load_wav("winterwind.wav")
 
 
 def freq_to_note(freq):
@@ -106,10 +90,6 @@ def plot_frequency_spectrum(wav_data, f_s=44100, numbered_notes=True, overtone_f
 
     x_plottable, y_plottable = x_vals[slc], y_vals[slc]
 
-    octave.plot(x_plottable, y_plottable)
-    octave.xlabel(xlabel)
-    octave.ylabel("Power")
-
     return x_vals, y_vals
 
 
@@ -145,11 +125,11 @@ def single_note_from(fft):
 
 if __name__ == "__main__":
     x, y = plot_frequency_spectrum(y, numbered_notes=True) #, overtone_filter=filter_first_overtone)
-    octave.print("plot_scipy.png")
 
-    # octave.hold("on")
-    # x, y = plot_frequency_spectrum(y_1, numbered_notes=True) #, overtone_filter=filter_first_overtone)
-    # octave.print("plot_scipy.png")
+    from matplotlib import pyplot
+    pyplot.xlim(0, 88)
+    pyplot.plot(x, y, linewidth=0.5)
+    pyplot.show()
 
     # b_sorted = sorted(enumerate(b), key=lambda x: x[1])
 
