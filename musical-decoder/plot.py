@@ -1,75 +1,161 @@
-print("Loading octave...")
+"""
+Plot frequency spectrum of wav files
+"""
+
+import math
+import os
 import numpy
+from scipy.fftpack import fft as FFT
+from scipy.io import wavfile
+print("Loading octave...")
+
 import oct2py
+
 
 octave = oct2py.Oct2Py()
 
 print("Loading sound file...")
-y, f_s = octave.audioread("C:/Users/User/Documents/university/Capstone Project/output.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/file.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/c-minor-chord.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/single-piano-note.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/single-notes.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/octave-on-piano.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/chromatic.wav")
-# y, f_s = octave.audioread("C:/Users/User/Desktop/winterwind.wav")
 
-def fft(vals):
-    print("Taking FFT...")
-    result = octave.abs(octave.fft(vals))
-    return result[:, 0] # + result[:, 1]
+AUDIO_DIR = os.path.abspath(__file__ + "/../../audio-samples")
 
-def no_filter(vals):
-    return vals
+def scipy_load_wav(filename):
+    fullpath = AUDIO_DIR + "/" + filename
+    assert os.path.exists(fullpath), "No such file: " + fullpath
+    y, f_s = wavfile.read(fullpath)
+    return y, f_s
 
-def filter_first_overtone(vals):
-    print("Filtering overtones...")
-    ret = vals[:]
-    for i, v in enumerate(ret):
-        try:
-            ret[i*2] = ret[i*2] - v # max(ret[i*2] - 2*v, 0)
-        except IndexError:
-            pass
-    return ret
+# y, f_s = octave_load_wav("output.wav")
+# y, f_s = octave_load_wav("file.wav")
+# y, f_s = octave_load_wav("c-minor-chord.wav")
+# y, f_s = octave_load_wav("single-piano-note.wav")
+# f_s, y = scipy_load_wav("waltz.wav")
+# f_s, y = scipy_load_wav("single-piano-note.wav")
+f_s, y = scipy_load_wav("single-note-me.wav")
+# y, f_s = octave_load_wav("single-notes.wav")
+# y, f_s = octave_load_wav("octave-on-piano.wav")
+# y, f_s = octave_load_wav("chromatic.wav")
+# y, f_s = octave_load_wav("winterwind.wav")
 
-def note_number_to_freq(num):
-    return 440 * 2**((num - 49) / 12)
 
-def freq_to_note_numbers(vals):
-    print("Converting frequencies to note numbers...")
+def freq_to_note(freq):
     """
     440Hz = "A"
     12 semitones per octave
     A440 is key number 49 on the piano
     """
-    ret = octave.log2(vals / 440) * 12 + 49
-    try:
-        return ret[0]
-    except IndexError:
-        return ret
+    return math.log2(freq / 440) * 12 + 49
 
-def plot_frequency_spectrum(wav_data, f_s=44100, numbered_notes=True, overtone_filter=no_filter):
+def note_to_freq(note):
+    return 440 * 2**((note - 49) / 12)
+
+
+# def filter_first_overtone(vals):
+#     print("Filtering overtones...")
+#     ret = vals[:]
+#     for i, v in enumerate(ret):
+#         try:
+#             ret[i*2] = ret[i*2] - v # max(ret[i*2] - 2*v, 0)
+#         except IndexError:
+#             pass
+#     return ret
+
+def get_scaling_factor(fft, f_s=44100):
+    return f_s / len(fft)
+
+scaling_factor = get_scaling_factor(y, f_s)
+
+def fft_to_hz(fft):
+    """
+    Convert abstract FFT x-values to Hz.
+    Source: https://dsp.stackexchange.com/questions/46167/getting-frequencies-corresponding-to-peaks-in-fft-plot-matlab  # pylint: disable=line-too-long
+    """
+    x_vals = numpy.linspace(1, len(fft), len(fft)) * scaling_factor
+
+    assert len(x_vals) == len(fft)
+    return x_vals
+
+
+def displayable_range():
+    """
+    Returns: slice representing lowest to highest notes on piano
+    A0 => 27.5 Hz
+    C8 => 4186 Hz
+    """
+    lowest_note = int(26 / scaling_factor)
+    highest_note = int(4200 / scaling_factor)
+
+    return slice(lowest_note, highest_note)
+
+
+def plot_frequency_spectrum(wav_data, f_s=44100, numbered_notes=True, overtone_filter=None):
     # Filter overtones
-    y_vals = overtone_filter(fft(wav_data))
+    y_vals = numpy.abs(FFT(wav_data))
+    if overtone_filter:
+        y_vals = overtone_filter(y_vals)
 
-    # Convert abstract FFT indexes to Hz
-    # Source: https://dsp.stackexchange.com/questions/46167/getting-frequencies-corresponding-to-peaks-in-fft-plot-matlab  # pylint: disable=line-too-long
-    scaling_factor = f_s / len(wav_data)
-    x_vals = (octave.linspace(1, len(wav_data), len(wav_data)) * scaling_factor)[0]
-    assert len(y_vals) == len(x_vals)
-
-    r_min = int(26 / scaling_factor)    # Frequency of lowest note on piano
-    r_max = int(4200 / scaling_factor)  # Frequency of highest note on piano
-
-    if numbered_notes:
-        x_vals = freq_to_note_numbers(x_vals)
+    x_vals = fft_to_hz(y_vals)
+    slc = displayable_range()
 
     print("Plotting...")
 
-    x_plottable, y_plottable = x_vals[r_min:r_max], y_vals[r_min:r_max]
+    if numbered_notes:
+        x_vals = [freq_to_note(x) for x in x_vals]
+        xlabel = "Note numbers (A440 = 49)"
+    else:
+        xlabel = "Frequency (Hz)"
+
+    x_plottable, y_plottable = x_vals[slc], y_vals[slc]
 
     octave.plot(x_plottable, y_plottable)
-    return x_plottable, y_plottable
+    octave.xlabel(xlabel)
+    octave.ylabel("Power")
 
-a, b = plot_frequency_spectrum(y, numbered_notes=True) #, overtone_filter=filter_first_overtone)
-b_sorted = sorted(enumerate(b), key=lambda x: x[1])
+    return x_vals, y_vals
+
+
+def tuning(fft, note_numbers):
+    peak = note_numbers[fft.argmax()] % 1
+
+    if peak > 0.5:
+        return peak - 1
+    else:
+        return peak
+
+
+def to_buckets(fft):
+    num_buckets = 88
+
+    buckets = []
+    for note in range(num_buckets):
+        i = int(note_to_freq(note) / scaling_factor)
+        j = int(note_to_freq(note + 1) / scaling_factor)
+        print(i, j)
+        buckets.append(fft[i:j])
+
+    return buckets
+
+
+def single_note_from(fft):
+    peak = freq_to_note(fft.argmax() * scaling_factor)
+    tuning = (peak % 1)
+    if tuning < 0.5:
+        return int(peak)
+    else:
+        return int(peak+1)
+
+if __name__ == "__main__":
+    x, y = plot_frequency_spectrum(y, numbered_notes=True) #, overtone_filter=filter_first_overtone)
+    octave.print("plot_scipy.png")
+
+    # octave.hold("on")
+    # x, y = plot_frequency_spectrum(y_1, numbered_notes=True) #, overtone_filter=filter_first_overtone)
+    # octave.print("plot_scipy.png")
+
+    # b_sorted = sorted(enumerate(b), key=lambda x: x[1])
+
+    # import time
+    # def tryit(x):
+    #     start = time.time()
+    #     for i in range(x):
+    #         a = fft(y[:(4400 + x)])
+    #     print(time.time() - start)
