@@ -8,7 +8,7 @@ import numpy
 from scipy.fftpack import fft as FFT
 from scipy.io import wavfile
 
-print("Loading sound file...")
+# print("Loading sound file...")
 
 AUDIO_DIR = os.path.abspath(__file__ + "/../../audio-samples")
 
@@ -49,6 +49,13 @@ def get_scaling_factor(fft, f_s=44100):
 
 scaling_factor = get_scaling_factor(y, f_s)
 
+
+def set_scale(y, f_s):
+    # TODO refactor this crime against programming.
+    # Who uses globals in python?!
+    global scaling_factor
+    scaling_factor = get_scaling_factor(y, f_s)
+
 def fft_to_hz(fft):
     """
     Convert abstract FFT x-values to Hz.
@@ -81,7 +88,7 @@ def plot_frequency_spectrum(wav_data, f_s=44100, numbered_notes=True, overtone_f
     x_vals = fft_to_hz(y_vals)
     slc = displayable_range()
 
-    print("Plotting...")
+    # print("Plotting...")
 
     if numbered_notes:
         x_vals = [freq_to_note(x) for x in x_vals]
@@ -118,7 +125,7 @@ def to_buckets(fft):
 
 def single_note_from(fft):
     try:
-        peak = freq_to_note(fft.argmax() * scaling_factor)
+        peak = freq_to_note(numpy.abs(fft).argmax() * scaling_factor)
     except ValueError:
         return 0
     tuning = (peak % 1)
