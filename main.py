@@ -40,7 +40,7 @@ for i in np.arange(0, len(y), f_s / 10):
     # print(i)
     ts = time.time()
     # print("%d:%d"%(i,i+f_s/10))
-    sample = y[int(i):int(i+f_s/10)].copy()
+    sample = y[int(i):int(i+f_s/10)]
     set_scale(sample, f_s)
     # print(len(sample))
     # sample = sample - np.mean(sample)
@@ -68,7 +68,9 @@ for i in np.arange(0, len(y), f_s / 10):
 
         image.set_data(matcher.MED_buffer)
         image.set_extent((0, len(matcher.page_buffer), len(matcher.recent_note_buffer), 0))
+        ax2.annotate(alignment_call[-1],(len(notes),notes[-1]), fontsize=20)
         fig1.canvas.draw()
+        fig2.canvas.draw()
         plt.pause(0.01)
         if best_alignment == len(notes_on_page):
             print("Reached end of the page")
