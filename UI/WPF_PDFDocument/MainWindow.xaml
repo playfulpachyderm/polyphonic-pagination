@@ -5,16 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:WPF_PDFDocument.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="740" Width="575">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="139*"/>
             <ColumnDefinition Width="378*"/>
         </Grid.ColumnDefinitions>
-        <controls:PdfViewer PdfPath="Assets/anthem.pdf" Grid.ColumnSpan="2"/>
+        <controls:PdfViewer PdfPath="Assets/Pi.pdf" Grid.ColumnSpan="2"/>
+
         <Button x:Name="nextBtn" Content="Next" Click="nextPage"  Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,30,5" VerticalAlignment="Bottom" Width="75"/>
         <Button x:Name="prevBtn" Content="Prev" Click="prevPage" HorizontalAlignment="Left" Margin="10,0,0,5" VerticalAlignment="Bottom" Width="75"/>
-        <Button x:Name="drawRectTest" Content="draw test" Click="drawRect" HorizontalAlignment="Left" Margin="10,0,0,5" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="changePDFButton" Content="changePDFt" Click="changePDF" HorizontalAlignment="Left" Margin="10,0,0,5" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="nextMeas" Content="NextMeas" Click="nextMeasure"  Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,30,30" VerticalAlignment="Bottom" Width="75"/>
+        <Button x:Name="prevMeas" Content="PrevMeas" Click="prevMeasure" HorizontalAlignment="Left" Margin="10,0,0,30" VerticalAlignment="Bottom" Width="75"/>
 
 
     </Grid>

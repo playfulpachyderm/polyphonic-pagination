@@ -8,7 +8,12 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <ScrollViewer PanningMode="Both"
                 Background="DarkGray">
-        <ItemsControl x:Name="PagesContainer"/>
+
+        <Canvas x:Name="hightlight">
+            <ItemsControl x:Name="PagesContainer"/>
+        </Canvas>
+
     </ScrollViewer>
-    
+
+
 </UserControl>
