@@ -4,13 +4,11 @@ from page_import.Monophonic_Pagination import *
 from MED.PatternMatch import *
 import numpy as np
 import matplotlib.pyplot as plt
-import pyaudio
 import time
+import winsound
 
 page = monophonic_pageinator("./page_import/Pi.xml")
 # print(page[0][0][0])
-
-
 
 f_s, y = scipy_load_wav("pi_mono.wav")
 # plt.figure(1)
@@ -22,16 +20,23 @@ pno = 0
 notes_on_page = [page[pno][i][0] for i in range(0, len(page[pno]))]
 
 matcher = MEDBuffer(notes_on_page, 5)
-image = plt.imshow(matcher.MED_buffer, origin='upper')
-plt.xlabel("Page Buffer")
-plt.ylabel("Played Note Buffer")
-plt.draw()
+fig1, ax1 = plt.subplots()
+image = ax1.imshow(matcher.MED_buffer, origin='upper', vmin=0, vmax=1e2)
+ax1.set_xlabel("Page Buffer")
+ax1.set_ylabel("Played Note Buffer")
+fig1.canvas.draw()
 plt.pause(0.01)
 
 notes = []
 alignment_call = []
+fig2, ax2 = plt.subplots()
+plot, = ax2.plot(notes, '*')
+
+winsound.PlaySound('page_import/Pi.wav', winsound.SND_ASYNC)
+
 for i in np.arange(0, len(y), f_s / 10):
 
+    ts = time.time()
     # print("%d:%d"%(i,i+f_s/10))
     sample = y[int(i):int(i+f_s/10)].copy()
     set_scale(sample, f_s)
@@ -43,16 +48,26 @@ for i in np.arange(0, len(y), f_s / 10):
 
     fft_value = FFT(sample)
     n = single_note_from(fft_value)
-    if len(notes) == 0 or n != notes[-1]:
-        notes.append(n)
+
+    notes.append(n)
+
+    plot.set_ydata(notes)
+    plot.set_xdata(range(0, len(notes)))
+    ax2.set_xlim(len(notes) - 10, len(notes))
+    ax2.set_ylim(20, 80)
+    fig2.canvas.draw()
+
+    if len(notes) == 1 or n != notes[-2]:
+
+
         matcher.add_note(n)
         best_alignment = matcher.get_end_alignment()
         alignment_call.append(best_alignment)
 
         image.set_data(matcher.MED_buffer)
         image.set_extent((0, len(matcher.page_buffer), len(matcher.recent_note_buffer), 0))
-        plt.draw()
-        plt.pause(0.1)
+        fig1.canvas.draw()
+        plt.pause(0.01)
         if best_alignment == len(notes_on_page):
             print("Reached end of the page")
             pno += 1
@@ -62,8 +77,10 @@ for i in np.arange(0, len(y), f_s / 10):
             matcher = MEDBuffer(notes_on_page, 5)
             # break
 
-    # fig, ax = plt.subplots()
-    # ax.plot(notes, '*')
+    plt.pause(0.095 - (time.time() - ts))
+
+
+
     # for xpos, ypos in enumerate(notes):
     #     ax.annotate(alignment_call[xpos],(xpos,ypos))
     # # plt.show()
