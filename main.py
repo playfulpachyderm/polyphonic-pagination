@@ -31,11 +31,13 @@ notes = []
 alignment_call = []
 fig2, ax2 = plt.subplots()
 plot, = ax2.plot(notes, '*')
+plt.pause(0.01)
 
 winsound.PlaySound('page_import/Pi.wav', winsound.SND_ASYNC)
 
 for i in np.arange(0, len(y), f_s / 10):
 
+    # print(i)
     ts = time.time()
     # print("%d:%d"%(i,i+f_s/10))
     sample = y[int(i):int(i+f_s/10)].copy()
@@ -76,8 +78,9 @@ for i in np.arange(0, len(y), f_s / 10):
             notes_on_page = [page[pno][i][0] for i in range(0, len(page[pno]))]
             matcher = MEDBuffer(notes_on_page, 5)
             # break
-
-    plt.pause(0.095 - (time.time() - ts))
+    gap = 0.095 - (time.time() - ts)
+    if gap > 0:
+        plt.pause(gap)
 
 
 
