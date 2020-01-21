@@ -49,18 +49,15 @@ arrayThatGoesOnTheOutside = []
 # Dynamic array of currently held down notes
 # Each entry is a tuple [<note number>, <beats remaining>]
 notesHeldDownArray = []
-
-#BUT WHAT ABOUT THE START OF A NEW PAGE???
+previousOffsets = []    
 
 for i in range(len(pagesArray.pages)):
-    newPage = True
-    pageOffset = 0
+    pageOffset = pagesArray.pages[i].offset
     pageElements = pagesArray.pages[i].semiFlat.elements
     #print(pageElements)
     
     noteArray = []
-    previousOffsets = []
-    
+
     for x in pageElements:
         xClasses = x.classes
         if 'TimeSignature' in xClasses:
@@ -70,8 +67,6 @@ for i in range(len(pagesArray.pages)):
         if 'Note' in xClasses:
             if not previousOffsets:
                 elapsedBeats = 0
-            elif newPage:
-                pageOffset = previousOffsets[-1] + something # Whatever was left in the previous page
             else:
                 # Calculate elapsed beats since previous note
                 elapsedBeats = pageOffset + x.activeSite.offset + x.offset - previousOffsets[-1]
@@ -82,8 +77,6 @@ for i in range(len(pagesArray.pages)):
             currentNotes = []
             
             # Decrement remaining beats of all notes in notesHeldDownArray
-            print("notesHeldDownArray:")
-            print(notesHeldDownArray)
             for n in notesHeldDownArray:
                 n[1] = n[1] - elapsedBeats
 
@@ -117,9 +110,9 @@ for i in range(len(pagesArray.pages)):
                     elapsedBeats = 0
                 else:
                     # Calculate elapsed beats since previous note
-                    elapsedBeats = x.activeSite.offset + x.offset - previousOffsets[-1]
+                    elapsedBeats = pageOffset + x.activeSite.offset + x.offset - previousOffsets[-1]
 
-                previousOffsets.append(x.activeSite.offset + x.offset)
+                previousOffsets.append(pageOffset + x.activeSite.offset + x.offset)
 
                 # List of notes to append to noteArray
                 currentNotes = []
@@ -152,7 +145,7 @@ for i in range(len(pagesArray.pages)):
                 elapsedBeats = 0
             else:
                 # Calculate elapsed beats since previous note
-                elapsedBeats = x.activeSite.offset + x.offset - previousOffsets[-1]
+                elapsedBeats = pageOffset + x.activeSite.offset + x.offset - previousOffsets[-1]
             
             for n in notesHeldDownArray:
                 n[1] = n[1] - elapsedBeats
@@ -168,13 +161,11 @@ for i in range(len(pagesArray.pages)):
                     if previousNoteArrayEntry[1] == x.measureNumber and previousNoteArrayEntry[2] == x.beat:
                         noteArray.pop()
                 noteArray.append([ [0], x.measureNumber, x.beat])  
-                
-        # Set newPage flag to False
-        newPage = False
         
     #print(noteArray)
     arrayThatGoesOnTheOutside.append(noteArray)
 
+pp.pprint(previousOffsets)
 pp.pprint(arrayThatGoesOnTheOutside)
 
 #Outer array: 
