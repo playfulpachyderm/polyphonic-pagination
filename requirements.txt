@@ -1,0 +1,7 @@
+scipy
+PyAudio
+matplotlib
+music21
+
+Pillow
+pdf2image
