@@ -1,7 +1,7 @@
 import PatternMatch
 import random
 from matplotlib import pyplot as plt
-
+from time import sleep
 def cold_start():
 
     score = [[random.randint(0,30)] for i in range(60)]
@@ -9,16 +9,12 @@ def cold_start():
     jump = score[int(len(score)/2):]
     # jump = score[5:]
 
-    obj = PatternMatch.MEDBuffer(score)
+    obj = PatternMatch.MEDBuffer(score,plot=True)
 
     calls = [obj.add_note(i) for i in jump]
     print(calls)
-    obj.view_table()
-    plt.figure()
-    plt.plot(calls, ".k")
-    plt.xlabel("Interpreted Note Sequence Number")
-    plt.ylabel("Matched Score Note Sequence Number")
-    plt.show()
+    sleep(10)
+    obj.close_live_view()
 
 
 def missed_notes():
